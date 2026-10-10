@@ -1,0 +1,93 @@
+        /* Custom Glassmorphism & Animations */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .dark .glass-panel {
+            background: rgba(18, 18, 24, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-card {
+            background: rgba(30, 30, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Themes Variable Overrides */
+        .theme-gold {
+            --primary-accent: #ca8a04;
+            --gradient-from: #1c1917;
+            --gradient-to: #44403c;
+            --font-heading: 'Cinzel', serif;
+            --badge-bg: #fef08a;
+            --badge-text: #854d0e;
+        }
+        .theme-cyber {
+            --primary-accent: #06b6d4;
+            --gradient-from: #0f172a;
+            --gradient-to: #3b0764;
+            --font-heading: 'Outfit', sans-serif;
+            --badge-bg: #cff4fc;
+            --badge-text: #055160;
+        }
+        .theme-floral {
+            --primary-accent: #ec4899;
+            --gradient-from: #fbcfe8;
+            --gradient-to: #f3e8ff;
+            --font-heading: 'Playfair Display', serif;
+            --badge-bg: #fce7f3;
+            --badge-text: #9d174d;
+        }
+        .theme-sunset {
+            --primary-accent: #f97316;
+            --gradient-from: #431407;
+            --gradient-to: #7c2d12;
+            --font-heading: 'Outfit', sans-serif;
+            --badge-bg: #ffedd5;
+            --badge-text: #9a3412;
+        }
+        .theme-modern {
+            --primary-accent: #6366f1;
+            --gradient-from: #0f172a;
+            --gradient-to: #1e1b4b;
+            --font-heading: 'Inter', sans-serif;
+            --badge-bg: #e0e7ff;
+            --badge-text: #3730a3;
+        }
+
+        .heading-styled {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+        }
+
+        #hostStudioSection input:not([type="color"]),
+        #hostStudioSection textarea,
+        #hostStudioSection select {
+            color: #0f172a;
+        }
+        .dark #hostStudioSection input:not([type="color"]),
+        .dark #hostStudioSection textarea,
+        .dark #hostStudioSection select {
+            color: #f1f5f9;
+        }
+
+        /* Print styles */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .print-full { width: 100% !important; margin: 0 !important; box-shadow: none !important; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.6); }

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventCraft - Event invitation &amp; Management</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="js/tailwind.config.js"></script>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen antialiased selection:bg-amber-500 selection:text-white transition-colors duration-300">
+
+    <header class="no-print fixed top-0 left-0 right-0 z-50 glass-panel border-b border-white/10 px-4 py-3 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-bold shadow-md">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base md:text-lg leading-tight text-slate-800 dark:text-white flex items-center gap-2">
+                        EventCraft <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">Pro</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Interactive Event Invitation Studio</p>
+                </div>
+            </div>
+
+            <!-- Controls & Mode Switcher -->
+            <div class="flex items-center gap-2 md:gap-3">
+                <!-- Audio Toggle -->
+                <button id="audioToggleBtn" onclick="toggleAudio()" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-2 text-sm font-medium" title="Ambient Music">
+                    <i data-lucide="music" id="musicIcon" class="w-4 h-4"></i>
+                    <span class="hidden md:inline text-xs" id="musicText">Sound On</span>
+                </button>
+
+                <!-- Mode Switch Tabs -->
+                <div class="flex p-1 bg-slate-200 dark:bg-slate-800 rounded-xl">
+                    <button id="viewModeBtn" onclick="switchMode('view')" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                        <span>Guest View</span>
+                    </button>
+                    <button id="editModeBtn" onclick="switchMode('edit')" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all flex items-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        <i data-lucide="sliders" class="w-4 h-4"></i>
+                        <span>Host Studio</span>
+                    </button>
+                </div>
+
+                <!-- Export / Share Dropdown -->
+                <button onclick="openShareModal()" class="p-2 md:px-3.5 md:py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition-all flex items-center gap-1.5 text-xs md:text-sm shadow-md hover:shadow-amber-500/20">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Share Event</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <main class="pt-20 pb-12 px-4 md:px-6 min-h-screen flex flex-col items-center justify-center">
+
+        <div id="guestViewSection" class="w-full max-w-4xl mx-auto space-y-8 transition-all duration-500">
+            
+            <!-- Main Hero Card -->
+            <div id="mainCard" class="relative rounded-3xl overflow-hidden shadow-2xl glass-panel transition-all duration-500 border border-white/20 dark:border-white/10">
+                <!-- Hero Banner Image -->
+                <div class="relative h-64 sm:h-80 md:h-96 w-full overflow-hidden bg-slate-950">
+                    <img id="displayHeroImg" src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80" alt="Event Banner" class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                    
+                    <!-- Host Badge -->
+                    <div class="absolute top-4 left-4 sm:top-6 sm:left-6">
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-sm flex items-center gap-1.5">
+                            <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i> Hosted by <span id="displayHostName">Alexandra & James</span>
+                        </span>
+                    </div>
+
+                    <!-- Dress Code Tag -->
+                    <div class="absolute top-4 right-4 sm:top-6 sm:right-6">
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-500/90 text-slate-950 shadow-md flex items-center gap-1">
+                            <i data-lucide="shirt" class="w-3.5 h-3.5"></i> Dress Code: <span id="displayDressCode">Black Tie Optional</span>
+                        </span>
+                    </div>
+
+                    <!-- Event Title & Tagline -->
+                    <div class="absolute bottom-6 left-6 right-6 text-white space-y-2">
+                        <h2 id="displayTitle" class="heading-styled text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-shadow-lg">
+                            Annual Grand Gala 2026
+                        </h2>
+                        <p id="displayTagline" class="text-sm sm:text-lg text-slate-200 max-w-2xl font-light italic">
+                            An evening of elegance, live jazz performance, exquisite dinner, and celebration under the stars.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-6 sm:p-10 space-y-10 text-slate-800 dark:text-slate-100">
+                    
+                    <div class="p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20">
+                        <h3 class="text-xs uppercase tracking-widest text-amber-600 dark:text-amber-400 font-bold text-center mb-4 flex items-center justify-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4"></i> Event Countdown
+                        </h3>
+                        <div class="grid grid-cols-4 gap-2 sm:gap-4 text-center">
+                            <div class="p-3 sm:p-4 rounded-xl bg-white/60 dark:bg-slate-800/80 shadow-sm">
+                                <span id="cdDays" class="block text-2xl sm:text-4xl font-extrabold text-amber-600 dark:text-amber-400">00</span>
+                                <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Days</span>
+                            </div>
+                            <div class="p-3 sm:p-4 rounded-xl bg-white/60 dark:bg-slate-800/80 shadow-sm">
+                                <span id="cdHours" class="block text-2xl sm:text-4xl font-extrabold text-amber-600 dark:text-amber-400">00</span>
+                                <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Hours</span>
+                            </div>
+                            <div class="p-3 sm:p-4 rounded-xl bg-white/60 dark:bg-slate-800/80 shadow-sm">
+                                <span id="cdMins" class="block text-2xl sm:text-4xl font-extrabold text-amber-600 dark:text-amber-400">00</span>
+                                <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Mins</span>
+                            </div>
+                            <div class="p-3 sm:p-4 rounded-xl bg-white/60 dark:bg-slate-800/80 shadow-sm">
+                                <span id="cdSecs" class="block text-2xl sm:text-4xl font-extrabold text-amber-600 dark:text-amber-400">00</span>
+                                <span class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Secs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Event Details Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Date & Time -->
+                        <div class="flex items-start gap-4 p-5 rounded-2xl glass-card">
+                            <div class="p-3.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                                <i data-lucide="calendar" class="w-6 h-6"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <h4 class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Date & Time</h4>
+                                <p id="displayDateTime" class="font-semibold text-base sm:text-lg">Saturday, December 12, 2026</p>
+                                <p id="displayTimeRange" class="text-sm text-slate-500 dark:text-slate-400">7:00 PM – 11:30 PM EST</p>
+                            </div>
+                        </div>
+
+                        <!-- Location & Map -->
+                        <div class="flex items-start gap-4 p-5 rounded-2xl glass-card">
+                            <div class="p-3.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                                <i data-lucide="map-pin" class="w-6 h-6"></i>
+                            </div>
+                            <div class="space-y-1 w-full">
+                                <h4 class="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Location</h4>
+                                <p id="displayVenue" class="font-semibold text-base sm:text-lg">The Crystal Ballroom, Grand Plaza</p>
+                                <p id="displayAddress" class="text-sm text-slate-500 dark:text-slate-400">742 Evergreen Terrace, New York, NY</p>
+                                <a id="mapBtn" href="#" target="_blank" class="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:underline pt-1 font-semibold">
+                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open in Google Maps
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add to Calendar Bar -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/50">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="calendar-plus" class="w-5 h-5 text-amber-500"></i>
+                            <span class="text-sm font-medium">Add event to your calendar:</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="downloadICS()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white transition-all shadow-sm flex items-center gap-1">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> .ICS File
+                            </button>
+                            <button onclick="openGoogleCal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-white transition-all shadow-sm flex items-center gap-1">
+                                <i data-lucide="globe" class="w-3.5 h-3.5"></i> Google Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="heading-styled text-xl font-bold flex items-center gap-2">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-amber-500"></i> Schedule Agenda
+                        </h3>
+                        <div id="displayAgendaList" class="space-y-3 relative border-l-2 border-amber-500/30 ml-3 pl-6">
+                            <!-- Agenda items rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Map Preview Frame -->
+                    <div class="space-y-2">
+                        <h3 class="heading-styled text-xl font-bold flex items-center gap-2">
+                            <i data-lucide="navigation" class="w-5 h-5 text-amber-500"></i> Venue Location
+                        </h3>
+                        <div class="w-full h-56 sm:h-64 rounded-2xl overflow-hidden border border-white/10 shadow-inner bg-slate-800 relative">
+                            <iframe id="mapIframe" class="w-full h-full border-0 grayscale dark:invert contrast-125 opacity-90" loading="lazy" allowfullscreen src="https://maps.google.com/maps?q=742%20Evergreen%20Terrace,%20New%20York&t=&z=14&ie=UTF8&iwloc=&output=embed"></iframe>
+                        </div>
+                    </div>
+
+                    <div class="p-6 sm:p-8 rounded-3xl bg-slate-900/5 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-6">
+                        <div class="text-center space-y-1">
+                            <h3 class="heading-styled text-2xl font-bold">Will You Join Us?</h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Please respond before <span id="displayRsvpDeadline">December 1, 2026</span></p>
+                        </div>
+
+                        <form id="rsvpForm" onsubmit="handleRSVPSubmit(event)" class="space-y-4 max-w-xl mx-auto">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Full Name *</label>
+                                    <input type="text" id="rsvpName" required placeholder="e.g. Eleanor Vance" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-sm transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Email Address *</label>
+                                    <input type="email" id="rsvpEmail" required placeholder="eleanor@example.com" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-sm transition-all">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Attendance Status *</label>
+                                    <select id="rsvpStatus" required class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-sm transition-all">
+                                        <option value="Attending">Joyfully Accept 🎉</option>
+                                        <option value="Declined">Regretfully Decline 😔</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Plus One (+1)</label>
+                                    <select id="rsvpPlusOne" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-sm transition-all">
+                                        <option value="None">Just Myself</option>
+                                        <option value="Bringing +1">Bringing a Guest (+1)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Dietary Restrictions / Preferences</label>
+                                <input type="text" id="rsvpDietary" placeholder="e.g. Vegetarian, Gluten-Free, Allergies" class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-sm transition-all">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-1">Song Request or Note for Host</label>
+                                <textarea id="rsvpMessage" rows="2" placeholder="Tell us your favorite dance track or send wishes..." class="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none text-sm transition-all"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-base shadow-lg shadow-amber-500/20 transition-all transform active:scale-98 flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-5 h-5"></i> Submit RSVP Response
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Live Guest Wish wall / Guest list count -->
+                    <div class="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between">
+                            <h3 class="heading-styled text-xl font-bold flex items-center gap-2">
+                                <i data-lucide="users" class="w-5 h-5 text-amber-500"></i> Guest Book & Wishes 
+                                <span id="attendingCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold">0 Attending</span>
+                            </h3>
+                        </div>
+                        <div id="wishesList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1">
+                            <!-- Dynamically populated RSVPs -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="hostStudioSection" class="w-full max-w-5xl mx-auto hidden space-y-8">
+            <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl space-y-8 border border-white/20">
+                
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-6 h-6 text-amber-500"></i> Host Event Customizer Studio
+                        </h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Modify any field below to update your invitation live in real-time.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="resetToDefaults()" class="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Default
+                        </button>
+                        <button onclick="switchMode('view')" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition-all flex items-center gap-1.5 shadow-md">
+                            <i data-lucide="eye" class="w-4 h-4"></i> Preview Live Invitation
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Left Column: Theme & Visual Styling -->
+                    <div class="space-y-6 lg:col-span-1">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                            <i data-lucide="palette" class="w-4 h-4"></i> Color Scheme & Theme
+                        </h3>
+
+                        <div class="space-y-3">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400">Select Theme Preset</label>
+                            <div class="grid grid-cols-1 gap-2" id="themeSelector">
+                                <button onclick="setTheme('theme-gold')" class="p-3 rounded-xl border border-amber-500/40 bg-slate-900/40 text-left flex items-center justify-between hover:border-amber-500 transition-all">
+                                    <span class="text-sm font-medium">✨ Elegant Gold</span>
+                                    <span class="w-4 h-4 rounded-full bg-amber-500 inline-block"></span>
+                                </button>
+                                <button onclick="setTheme('theme-cyber')" class="p-3 rounded-xl border border-slate-700 bg-slate-900/40 text-left flex items-center justify-between hover:border-cyan-500 transition-all">
+                                    <span class="text-sm font-medium">⚡ Cyber Neon</span>
+                                    <span class="w-4 h-4 rounded-full bg-cyan-500 inline-block"></span>
+                                </button>
+                                <button onclick="setTheme('theme-floral')" class="p-3 rounded-xl border border-slate-700 bg-slate-900/40 text-left flex items-center justify-between hover:border-pink-500 transition-all">
+                                    <span class="text-sm font-medium">🌸 Floral Pastel</span>
+                                    <span class="w-4 h-4 rounded-full bg-pink-400 inline-block"></span>
+                                </button>
+                                <button onclick="setTheme('theme-sunset')" class="p-3 rounded-xl border border-slate-700 bg-slate-900/40 text-left flex items-center justify-between hover:border-orange-500 transition-all">
+                                    <span class="text-sm font-medium">🌅 Sunset Warmth</span>
+                                    <span class="w-4 h-4 rounded-full bg-orange-500 inline-block"></span>
+                                </button>
+                                <button onclick="setTheme('theme-modern')" class="p-3 rounded-xl border border-slate-700 bg-slate-900/40 text-left flex items-center justify-between hover:border-indigo-500 transition-all">
+                                    <span class="text-sm font-medium">💼 Modern Dark</span>
+                                    <span class="w-4 h-4 rounded-full bg-indigo-500 inline-block"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hero Image Selection -->
+                        <div class="space-y-3">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-400">Hero Image URL</label>
+                            <input type="url" id="inputHeroImg" oninput="updateEventData()" class="w-full px-3.5 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            <p class="text-[11px] text-slate-500">Quick Image Presets:</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button onclick="setHeroPreset('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80')" class="px-2 py-1 text-[11px] rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300">Gala/Party</button>
+                                <button onclick="setHeroPreset('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80')" class="px-2 py-1 text-[11px] rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300">Wedding</button>
+                                <button onclick="setHeroPreset('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80')" class="px-2 py-1 text-[11px] rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300">Tech Conf</button>
+                                <button onclick="setHeroPreset('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80')" class="px-2 py-1 text-[11px] rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300">Birthday</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Middle Column: Event Details Form -->
+                    <div class="space-y-4 lg:col-span-2">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i> Event Information & Content
+                        </h3>
+
+                        <div>
+                            <label for="inputTextColor" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Event Information Font Color</label>
+                            <input type="color" id="inputTextColor" value="#000000" oninput="updateEventData()" class="h-10 w-16 cursor-pointer rounded-lg border border-slate-300 bg-white p-1 dark:border-slate-700 dark:bg-slate-900" aria-label="Event information font color">
+                            <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Changes guest-facing event details and schedule. Hero text stays white for contrast.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Event Title</label>
+                                <input type="text" id="inputTitle" oninput="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Host Name(s)</label>
+                                <input type="text" id="inputHost" oninput="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Description / Tagline</label>
+                            <textarea id="inputTagline" oninput="updateEventData()" rows="2" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Event Date</label>
+                                <input type="date" id="inputDate" onchange="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Start Time</label>
+                                <input type="time" id="inputStartTime" onchange="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">End Time</label>
+                                <input type="time" id="inputEndTime" onchange="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Venue Name</label>
+                                <input type="text" id="inputVenue" oninput="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Street Address & City</label>
+                                <input type="text" id="inputAddress" oninput="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Dress Code</label>
+                                <input type="text" id="inputDressCode" oninput="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">RSVP Deadline Date</label>
+                                <input type="date" id="inputRsvpDeadline" onchange="updateEventData()" class="w-full px-3.5 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-amber-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Schedule Agenda Items</label>
+                                <button onclick="addAgendaItem()" class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-all flex items-center gap-1">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Slot
+                                </button>
+                            </div>
+                            <div id="agendaInputContainer" class="space-y-2">
+                                <!-- Dynamic Input Rows -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="pt-8 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="database" class="w-5 h-5 text-amber-500"></i> Guest Responses Management
+                            </h3>
+                            <p class="text-xs text-slate-500">Stored in a shared server file; guest list refreshes every 15 seconds.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportRSVPCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1 transition-all">
+                                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Export CSV
+                            </button>
+                            <button onclick="clearRSVPs()" class="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-1 transition-all">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold uppercase">
+                                <tr>
+                                    <th class="p-3">Guest Name</th>
+                                    <th class="p-3">Email</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">+1 Guest</th>
+                                    <th class="p-3">Dietary</th>
+                                    <th class="p-3">Song / Note</th>
+                                    <th class="p-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rsvpTableBody" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                                <!-- Dynamic RSVP rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <div id="shareModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm hidden transition-opacity">
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full space-y-6 shadow-2xl relative border border-white/20">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto">
+                    <i data-lucide="share-2" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Share Invitation</h3>
+                <p class="text-xs text-slate-500">Scan QR Code or copy direct link to invite guests.</p>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="flex flex-col items-center justify-center p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                <img id="qrCodeImg" src="" alt="Event QR Code" class="w-40 h-40 object-contain rounded-lg">
+                <span class="text-[10px] text-slate-400">Scan with smartphone camera</span>
+            </div>
+
+            <!-- Copy Link Input -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase">Invitation Link</label>
+                <div class="flex gap-2">
+                    <input type="text" id="shareUrlInput" readonly class="w-full px-3.5 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 outline-none">
+                    <button onclick="copyShareUrl()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl transition-all flex items-center gap-1 shrink-0">
+                        <i data-lucide="copy" class="w-4 h-4"></i> Copy
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="window.print()" class="w-full py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Print / Save as PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
